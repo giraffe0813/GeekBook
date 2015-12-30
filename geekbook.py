@@ -4,7 +4,7 @@ import cookielib
 
 
 # deprecated
-def readSaveCookie(url):
+def read_save_cookie(url):
 
     filename = 'cookie4geek.txt'
     cookie = cookielib.MozillaCookieJar(filename)
@@ -15,14 +15,15 @@ def readSaveCookie(url):
 
 
 # get page from url
-def getHtml(url):
+def get_html(url):
 
     page = urllib2.urlopen(url)
     html = page.read()
     return html
 
+
 # get url which end of 'pdf' and download
-def getPdf(html):
+def get_pdf(html):
     reg = r'href="(.+?\.pdf)"'
     imgre = re.compile(reg)
     imglist = re.findall(imgre, html)
@@ -63,9 +64,9 @@ def getPdf(html):
         f.close()
 
 # get page from specific url
-html = getHtml("https://www.geekbooks.me/book/view/angularjs-directives-cookbook")
+html = get_html("https://www.geekbooks.me/book/view/angularjs-directives-cookbook")
 
-getPdf(html)
+get_pdf(html)
 
 
 
