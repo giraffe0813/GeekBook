@@ -35,11 +35,6 @@ def get_all_detail_url(url, category):
     :param category:
     :return:
     """
-    # if category directory is not exist, create
-    # if os.path.isdir("./" + category):
-    #     pass
-    # else:
-    #     os.mkdir("./" + category)
 
     f = open("detailurl.txt", "ab")
     f.write(category)

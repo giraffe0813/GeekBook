@@ -1,6 +1,7 @@
 import urllib2
 import re
 import cookielib
+import os
 
 
 # deprecated
@@ -23,7 +24,13 @@ def get_html(url):
 
 
 # get url which end of 'pdf' and download
-def download_pdf(url):
+def download_pdf(url, category):
+
+    # if category directory is not exist, create
+    if os.path.isdir("./" + category):
+        pass
+    else:
+        os.mkdir("./" + category)
     html = get_html(url)
     reg = r'href="(.+?\.pdf)"'
     imgre = re.compile(reg)
