@@ -41,8 +41,9 @@ def get_all_detail_url(url, category):
     # else:
     #     os.mkdir("./" + category)
 
-    f = open("detailurl.txt", "wb")
+    f = open("detailurl.txt", "ab")
     f.write(category)
+    f.write('\n')
 
     page = urllib2.urlopen(url)
     html = page.read()
@@ -66,6 +67,7 @@ def get_all_detail_url(url, category):
     url_list = list(set(url_list))
     for item in url_list:
         f.write(item)
+        f.write('\n')
     f.close()
     print(url_list)
 
