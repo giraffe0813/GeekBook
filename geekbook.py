@@ -31,6 +31,7 @@ def download_pdf(url, category):
         pass
     else:
         os.mkdir("./" + category)
+
     html = get_html(url)
     reg = r'href="(.+?\.pdf)"'
     imgre = re.compile(reg)
