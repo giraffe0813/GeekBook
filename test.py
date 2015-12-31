@@ -64,6 +64,9 @@ def get_all_detail_url(url, category):
         url_list += temp_list
 
     url_list = list(set(url_list))
+    for item in url_list:
+        f.write(item)
+    f.close()
     print(url_list)
 
 
@@ -81,7 +84,6 @@ def deal_with_pagination(pagination_list):
     if pagination_list.__len__() <= 1:
         return pagination_list
     prefix = pagination_list[0].split("&")[0]
-    print prefix
     num = []
     for item in pagination_list:
         num.append(int(item.split("=")[-1]))
