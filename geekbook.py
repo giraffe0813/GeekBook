@@ -23,7 +23,7 @@ def get_html(url):
 
 
 # get url which end of 'pdf' and download
-def get_pdf(html):
+def download_pdf(html):
     reg = r'href="(.+?\.pdf)"'
     imgre = re.compile(reg)
     imglist = re.findall(imgre, html)
@@ -51,6 +51,7 @@ def get_pdf(html):
         file_size_dl = 0
         block_sz = 8192
         while True:
+
             buffer = u.read(block_sz)
             if not buffer:
                 break
@@ -64,9 +65,9 @@ def get_pdf(html):
         f.close()
 
 # get page from specific url
-html = get_html("https://www.geekbooks.me/book/view/angularjs-directives-cookbook")
+#html = get_html("https://www.geekbooks.me/book/view/angularjs-directives-cookbook")
 
-get_pdf(html)
+#download_pdf(html)
 
 
 
