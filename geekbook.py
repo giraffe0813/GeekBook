@@ -23,7 +23,8 @@ def get_html(url):
 
 
 # get url which end of 'pdf' and download
-def download_pdf(html):
+def download_pdf(url):
+    html = get_html(url)
     reg = r'href="(.+?\.pdf)"'
     imgre = re.compile(reg)
     imglist = re.findall(imgre, html)
@@ -37,7 +38,7 @@ def download_pdf(html):
     handler = urllib2.HTTPCookieProcessor(cookie)
     opener = urllib2.build_opener(handler)
     # add header
-    opener.addheaders = [('User-agent', 'Mozilla/5.0'), ("Referer", "https://www.geekbooks.me/book/view/angularjs-directives-cookbook")]
+    opener.addheaders = [('User-agent', 'Mozilla/5.0'), ("Referer", url)]
 
     for url in imglist:
         print("https://www.geekbooks.me" + url)
