@@ -110,7 +110,7 @@ if __name__ == "__main__":
     # books > download with full speed
     for book in books:
         print book.dir, "#", book.url
-        book.download()
+        # book.download()
     pool = threadpool.ThreadPool(20)
     reqs = threadpool.makeRequests(downloadTask, books)
     [pool.putRequest(req) for req in reqs]
