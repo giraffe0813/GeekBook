@@ -9,12 +9,13 @@ import threadpool
 
 
 class Book():
-    def __init__(self, dir, url):
+    def __init__(self, dir, url, down_url):
         self.dir = dir
         self.url = url
+        self.down_url = down_url
 
     def download(self):
-        download_pdf("https://www.geekbooks.me" + self.url, self.dir)
+        download_pdf("https://www.geekbooks.me" + self.url, self.dir,self.down_url)
 
 
 # deprecated
@@ -35,7 +36,7 @@ def get_html(url):
 
 
 # get url which end of 'pdf' and download
-def download_pdf(url, category):
+def download_pdf(url, category,down_url):
     # if category directory is not exist, create
     if os.path.isdir("." + category):
         pass
@@ -54,38 +55,31 @@ def download_pdf(url, category):
     # add header
     opener.addheaders = [('User-agent', 'Mozilla/5.0'), ("Referer", url)]
 
-    for url in list_pdf_url_by_book_detail_url(url):
-        print("https://www.geekbooks.me" + url)
-        file_name = url.split('/')[-1]
-        u = opener.open("https://www.geekbooks.me" + url)
-        print("preparing......")
-        # f with directory
-        f = open("." + category + "/" + file_name, 'wb')
-        meta = u.info()
-        file_size = int(meta.getheaders("Content-Length")[0])
-        print "Downloading: %s Bytes: %s" % (file_name, file_size)
-        file_size_dl = 0
-        block_sz = 8192
-        while True:
+    print(down_url)
+    file_name = url.split('/')[-1] + ".pdf"
+    u = opener.open(down_url)
+    print("preparing......")
+    # f with directory
+    f = open("." + category + "/" + file_name, 'wb')
+    meta = u.info()
+    file_size = int(meta.getheaders("Content-Length")[0])
+    print "Downloading: %s Bytes: %s" % (file_name, file_size)
+    file_size_dl = 0
+    block_sz = 8192
+    while True:
 
-            buffer = u.read(block_sz)
-            if not buffer:
-                break
+        buffer = u.read(block_sz)
+        if not buffer:
+            break
 
-            file_size_dl += len(buffer)
-            f.write(buffer)
-            status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-            status = status + chr(8) * (len(status) + 1)
-            print status,
+        file_size_dl += len(buffer)
+        f.write(buffer)
+        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+        status = status + chr(8) * (len(status) + 1)
+        print status,
 
-        f.close()
+    f.close()
 
-
-def list_pdf_url_by_book_detail_url(book_detail_url):
-    html = get_html(book_detail_url)
-    reg = r'href="(.+?\.pdf)"'
-    imgre = re.compile(reg)
-    return re.findall(imgre, html)
 
 
 def downloadTask(book):
@@ -94,22 +88,17 @@ def downloadTask(book):
 
 if __name__ == "__main__":
     # processing all books
-    f = open("detailurl.txt", "r")
+    f = open("../txt/merge_pdf_url_file.txt", "r")
     books = []
-    destDir = ""
-    tmp = ""
     for line in f:
-        if not (line.strip()).startswith("/"):
-            tmp += "/" + line.strip()
-            destDir = tmp
-        else:
-            # desDir
-            book = Book(destDir, line.strip())
-            books.append(book)
-            tmp = ""
+        merge_list = line.split('##')
+        # desDir
+        book = Book(merge_list[1], merge_list[3].strip(),merge_list[2])
+        books.append(book)
+
     # books > download with full speed
     for book in books:
-        print book.dir, "#", book.url
+        print book.dir, "#", book.url , "#" ,book.down_url
         # book.download()
     pool = threadpool.ThreadPool(20)
     reqs = threadpool.makeRequests(downloadTask, books)
