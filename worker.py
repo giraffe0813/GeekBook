@@ -37,11 +37,10 @@ def get_html(url):
 # get url which end of 'pdf' and download
 def download_pdf(url, category):
     # if category directory is not exist, create
-    if os.path.isdir("." + category):
+    if os.path.isdir("./books" + category):
         pass
     else:
-        os.makedirs("." + category)
-
+        os.makedirs("./books" + category)
     # create instance of MozillaCookieJar
     cookie = cookielib.MozillaCookieJar()
     # get cookie from file
@@ -53,31 +52,29 @@ def download_pdf(url, category):
     opener = urllib2.build_opener(handler)
     # add header
     opener.addheaders = [('User-agent', 'Mozilla/5.0'), ("Referer", url)]
-
     for url in list_pdf_url_by_book_detail_url(url):
         print("https://www.geekbooks.me" + url)
         file_name = url.split('/')[-1]
         u = opener.open("https://www.geekbooks.me" + url)
         print("preparing......")
         # f with directory
-        f = open("." + category + "/" + file_name, 'wb')
+        if os.path.exists("./books" + category + "/" + file_name):
+            continue
+        f = open("./books" + category + "/" + file_name, 'wb')
         meta = u.info()
         file_size = int(meta.getheaders("Content-Length")[0])
         print "Downloading: %s Bytes: %s" % (file_name, file_size)
         file_size_dl = 0
         block_sz = 8192
         while True:
-
             buffer = u.read(block_sz)
             if not buffer:
                 break
-
             file_size_dl += len(buffer)
             f.write(buffer)
             status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
             status = status + chr(8) * (len(status) + 1)
             print status,
-
         f.close()
 
 
@@ -111,7 +108,7 @@ if __name__ == "__main__":
     for book in books:
         print book.dir, "#", book.url
         # book.download()
-    pool = threadpool.ThreadPool(20)
+    pool = threadpool.ThreadPool(200)
     reqs = threadpool.makeRequests(downloadTask, books)
     [pool.putRequest(req) for req in reqs]
     pool.wait()
