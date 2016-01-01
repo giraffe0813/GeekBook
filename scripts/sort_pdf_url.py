@@ -4,8 +4,8 @@ import geekbook
 import sys
 
 
-f = open("detailurl.txt","r");
-pdf_url_file = open('pdf_url_file.txt','a+')
+f = open("../txt/detailurl.txt","r");
+pdf_url_file = open('../txt/pdf_url_file.txt','a+')
 
 domain = "https://www.geekbooks.me"
 category = ""

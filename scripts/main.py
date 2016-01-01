@@ -36,7 +36,7 @@ def get_all_detail_url(url, category):
     :return:
     """
 
-    f = open("detailurl.txt", "ab")
+    f = open("../txt/detailurl.txt", "ab")
     f.write(category)
     f.write('\n')
 
