@@ -94,7 +94,7 @@ def downloadTask(book):
 
 if __name__ == "__main__":
     # processing all books
-    f = open("detailurl.txt", "r")
+    f = open("../txt/detailurl.txt", "r")
     books = []
     destDir = ""
     tmp = ""
