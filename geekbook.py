@@ -17,10 +17,14 @@ def read_save_cookie(url):
 
 # get page from url
 def get_html(url):
-
-    page = urllib2.urlopen(url)
-    html = page.read()
-    return html
+    fail = 0
+    while True:
+        try:
+            page = urllib2.urlopen(url,data=None,timeout=10)
+            return page.read()
+        except Exception as e:
+            fail += 1
+            print 'failed %s times url=%s' % (fail, url)
 
 
 # get url which end of 'pdf' and download
