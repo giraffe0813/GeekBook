@@ -38,10 +38,12 @@ def get_html(url):
 # get url which end of 'pdf' and download
 def download_pdf(url, category,down_url):
     # if category directory is not exist, create
-    if os.path.isdir("." + category):
+
+    parent_path = "book/"
+    if os.path.isdir(parent_path + category):
         pass
     else:
-        os.makedirs("." + category)
+        os.makedirs(parent_path + category)
 
     # create instance of MozillaCookieJar
     cookie = cookielib.MozillaCookieJar()
@@ -60,7 +62,7 @@ def download_pdf(url, category,down_url):
     u = opener.open(down_url)
     print("preparing......")
     # f with directory
-    f = open("." + category + "/" + file_name, 'wb')
+    f = open(parent_path + category + "/" + file_name, 'wb')
     meta = u.info()
     file_size = int(meta.getheaders("Content-Length")[0])
     print "Downloading: %s Bytes: %s" % (file_name, file_size)
@@ -88,7 +90,7 @@ def downloadTask(book):
 
 if __name__ == "__main__":
     # processing all books
-    f = open("../txt/detailurl.txt", "r")
+    f = open("../txt/merge_pdf_url_file.txt", "r")
     books = []
     for line in f:
         merge_list = line.split('##')
