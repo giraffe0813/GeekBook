@@ -4,9 +4,9 @@ import geekbook
 import sys
 
 
-f = open("detailurl.txt","r");
-pdf_url_file = open('pdf_url_file.txt','r')
-merge_pdf_url_file = open('merge_pdf_url_file.txt','w+')
+f = open("txt/detailurl.txt","r");
+pdf_url_file = open('txt/pdf_url_file.txt','r')
+merge_pdf_url_file = open('txt/merge_pdf_url_file.txt','w+')
 
 book_list = []
 for line in f:
