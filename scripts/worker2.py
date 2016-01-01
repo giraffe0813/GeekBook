@@ -88,11 +88,7 @@ def downloadTask(book):
 
 if __name__ == "__main__":
     # processing all books
-<<<<<<< HEAD
-    f = open("../txt/merge_pdf_url_file.txt", "r")
-=======
     f = open("../txt/detailurl.txt", "r")
->>>>>>> 0f5ce7e5a03b6ea593989aedf698bec32dfc1103
     books = []
     for line in f:
         merge_list = line.split('##')
