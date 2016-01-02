@@ -1,5 +1,0 @@
-/book/view/webrtc-blueprints
-/book/view/learning-webrtc
-/book/view/webrtc-cookbook
-/book/view/real-time-communication-with-webrtc
-/book/view/webrtc-integrator-s-guide
