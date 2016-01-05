@@ -3,8 +3,9 @@ import re
 from bs4 import BeautifulSoup
 import MySQLdb
 import time
+from GeekBook.conf import conf_host, conf_user, conf_passwd
 
-conn = MySQLdb.connect(host="localhost",user="root",passwd="coffee",db="geekbookadmin",charset="utf8")
+conn = MySQLdb.connect(host=conf_host, user=conf_user, passwd=conf_passwd, db="geekbookadmin",charset="utf8")
 cur = conn.cursor()
 
 
