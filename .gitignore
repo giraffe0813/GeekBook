@@ -122,3 +122,4 @@ appengine-generated/
 log.log
 GeekBook/books
 damaged.txt
+GeekBook/local_conf.py
