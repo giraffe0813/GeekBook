@@ -121,14 +121,12 @@ def get_book_detail(url):
         if item.string is None:
             continue
         info = item.string.split(": ")
-        if len(info) >=2:
+        if len(info) >= 2:
             info_map[info[0]] = info[1]
     print authors
     print title + info_map["Publisher"] +info_map["ISBN"] + info_map["Pages"] + info_map["Year"]
     cur.execute("insert into books_book (title,authors,isbn,pages,publisher,publish_year, tags,come_from) values (%s,%s,%s,%s,%s,%s,%s,%s)",(title,authors,info_map["ISBN"],info_map["Pages"],info_map["Publisher"],info_map["Year"],"",0))
     conn.commit()
-
-#get_book_detail("a")
 
 if __name__ == "__main__":
     f = open("../data/detailurl.txt", "r")
