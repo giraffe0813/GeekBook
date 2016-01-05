@@ -137,7 +137,6 @@ if __name__ == "__main__":
     for line in f:
         try:
             if line.startswith("/"):
-                print "aaa"
                 get_book_detail("https://www.geekbooks.me" + line)
         except:
             continue
