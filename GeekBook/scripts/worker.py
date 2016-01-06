@@ -1,11 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import Queue
 import urllib2
 import re
 import cookielib
 import os
 import threadpool
+from pyPdf import PdfFileReader
+from GeekBook.util.log_util import logger
+from GeekBook.conf import *
 
 
 class Book():
@@ -14,17 +14,7 @@ class Book():
         self.url = url
 
     def download(self):
-        download_pdf("https://www.geekbooks.me" + self.url, self.dir)
-
-
-# deprecated
-def read_save_cookie(url):
-    filename = 'cookie4geek.txt'
-    cookie = cookielib.MozillaCookieJar(filename)
-    handler = urllib2.HTTPCookieProcessor(cookie)
-    opener = urllib2.build_opener(handler)
-    response = opener.open(url)
-    cookie.save(ignore_discard=True, ignore_expires=True)
+        download_pdf(self.url, self.dir)
 
 
 # get page from url
@@ -34,33 +24,49 @@ def get_html(url):
     return html
 
 
+def list_pdf_url_by_book_detail_url(book_detail_url):
+    html = get_html(book_detail_url)
+    reg = r'href="(.+?\.pdf)"'
+    imgre = re.compile(reg)
+    return re.findall(imgre, html)
+
+
+def detect_book(dir):
+    try:
+        PdfFileReader(file(dir, 'rb'))
+        return True
+    except:
+        print 'damage>', dir
+        return False
+
+
 # get url which end of 'pdf' and download
 def download_pdf(url, category):
+    # add domain
+    url = "https://www.geekbooks.me" + url
     # if category directory is not exist, create
-    if os.path.isdir("./books" + category):
+    if os.path.isdir(conf_books_dir + category):
         pass
     else:
-        os.makedirs("./books" + category)
+        os.makedirs(conf_books_dir + category)
     # create instance of MozillaCookieJar
     cookie = cookielib.MozillaCookieJar()
     # get cookie from file
-    cookie.load('cookie4geek.txt', ignore_discard=True, ignore_expires=True)
-    for item in cookie:
-        print item.name
-        print item.value
+    cookie.load('../data/cookie4geek.data', ignore_discard=True, ignore_expires=True)
     handler = urllib2.HTTPCookieProcessor(cookie)
     opener = urllib2.build_opener(handler)
     # add header
     opener.addheaders = [('User-agent', 'Mozilla/5.0'), ("Referer", url)]
     for url in list_pdf_url_by_book_detail_url(url):
-        print("https://www.geekbooks.me" + url)
+        logger.info("PageDetailPage> {url}".format(url=("https://www.geekbooks.me" + url)))
         file_name = url.split('/')[-1]
         u = opener.open("https://www.geekbooks.me" + url)
-        print("preparing......")
+        print "Preparing to download..."
         # f with directory
-        if os.path.exists("./books" + category + "/" + file_name):
+        if os.path.exists(conf_books_dir + category + "/" + file_name) and detect_book(
+                (conf_books_dir + category + "/" + file_name)):
             continue
-        f = open("./books" + category + "/" + file_name, 'wb')
+        f = open(conf_books_dir + category + "/" + file_name, 'wb')
         meta = u.info()
         file_size = int(meta.getheaders("Content-Length")[0])
         print "Downloading: %s Bytes: %s" % (file_name, file_size)
@@ -78,20 +84,8 @@ def download_pdf(url, category):
         f.close()
 
 
-def list_pdf_url_by_book_detail_url(book_detail_url):
-    html = get_html(book_detail_url)
-    reg = r'href="(.+?\.pdf)"'
-    imgre = re.compile(reg)
-    return re.findall(imgre, html)
-
-
-def downloadTask(book):
-    book.download()
-
-
-if __name__ == "__main__":
-    # processing all books
-    f = open("../txt/detailurl.txt", "r")
+def download_work():
+    f = open("../data/detailurl.txt", "r")
     books = []
     destDir = ""
     tmp = ""
@@ -104,14 +98,14 @@ if __name__ == "__main__":
             book = Book(destDir, line.strip())
             books.append(book)
             tmp = ""
-    # books > download with full speed
-    for book in books:
-        print book.dir, "#", book.url
-        # book.download()
-    pool = threadpool.ThreadPool(200)
-    reqs = threadpool.makeRequests(downloadTask, books)
+    pool = threadpool.ThreadPool(conf_thread_count)
+    reqs = threadpool.makeRequests(lambda book: book.download(), books)
     [pool.putRequest(req) for req in reqs]
     pool.wait()
+
+
+if __name__ == "__main__":
+    download_work()
 
 
 

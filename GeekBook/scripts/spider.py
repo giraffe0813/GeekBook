@@ -1,8 +1,13 @@
 import urllib2
 import re
-import os
-import cookielib
-import geekbook
+from bs4 import BeautifulSoup
+import MySQLdb
+import time
+from GeekBook.conf import conf_host, conf_user, conf_passwd
+
+conn = MySQLdb.connect(host=conf_host, user=conf_user, passwd=conf_passwd, db="geekbookadmin",charset="utf8")
+cur = conn.cursor()
+
 
 category_url = "https://www.geekbooks.me/category"
 pdf_list = []
@@ -36,7 +41,7 @@ def get_all_detail_url(url, category):
     :return:
     """
 
-    f = open("../txt/detailurl.txt", "ab")
+    f = open("./data/detailurl.data", "ab")
     f.write(category)
     f.write('\n')
 
@@ -93,8 +98,48 @@ def deal_with_pagination(pagination_list):
 
     return result
 
+def get_book_detail(url):
+    """
+    get book detail,include author,title,and so on
+    :param url:
+    :return:
+    """
+    page = urllib2.urlopen(url)
+    html = page.read()
+    soup = BeautifulSoup(html)
+    info_html = soup.find("td", class_="info")
+    title = info_html.h1.string
+    authors_href = info_html.findAll("a")
+    authors = ""
+    for item in authors_href:
+        authors += item.string
+    p = info_html.findAll("p")
+    p.remove(p[0])
+    p.remove(p[4])
+    info_map = {}
+    for item in p:
+        if item.string is None:
+            continue
+        info = item.string.split(": ")
+        if len(info) >= 2:
+            info_map[info[0]] = info[1]
+    print authors
+    print title + info_map["Publisher"] +info_map["ISBN"] + info_map["Pages"] + info_map["Year"]
+    cur.execute("insert into books_book (title,authors,isbn,pages,publisher,publish_year, tags,come_from) values (%s,%s,%s,%s,%s,%s,%s,%s)",(title,authors,info_map["ISBN"],info_map["Pages"],info_map["Publisher"],info_map["Year"],"",0))
+    conn.commit()
 
-get_all_category_url(category_url)
+if __name__ == "__main__":
+    f = open("../data/detailurl.txt", "r")
+    books = []
+    destDir = ""
+    tmp = ""
+    for line in f:
+        try:
+            if line.startswith("/"):
+                get_book_detail("https://www.geekbooks.me" + line)
+        except:
+            continue
+
 
 
 
