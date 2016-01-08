@@ -1,3 +1,4 @@
+import traceback
 import urllib2
 import re
 from bs4 import BeautifulSoup
@@ -8,10 +9,12 @@ import base64
 from GeekBook.conf import conf_host, conf_user, conf_passwd
 
 conn = MySQLdb.connect(host=conf_host, user=conf_user, passwd=conf_passwd, db="geekbookadmin", charset="utf8")
+
 cur = conn.cursor()
 
 category_url = "https://www.geekbooks.me/category"
 pdf_list = []
+ISOTIMEFORMAT='%Y-%m-%d %X'
 
 
 # get all category url
@@ -116,12 +119,16 @@ def get_book_detail(url):
     if soup.find("p", class_="author").findAll("a") is not None:
         for author in soup.find("p", class_="author").findAll("a"):
             authors += author.string + ","
+        authors = authors[:len(authors)-1]
     # tag
     tags = ""
     # soup.findAll("a", class_="tag")
     if soup.findAll("a", class_="tag") is not None:
         for tag in soup.findAll("a", class_="tag"):
             tags += tag.string + ","
+        tags = tags[:len(tags)-1]
+
+
     #
     categorys = ""
     if soup.find("ul", class_="breadcrumbs").findAll("li")[2:-1] is not None:
@@ -140,13 +147,22 @@ def get_book_detail(url):
         info = item.string.split(": ")
         if len(info) >= 2:
             info_map[info[0]] = info[1]
-    print authors
-    print title + info_map["Publisher"] + info_map["ISBN"] + info_map["Pages"] + info_map[
-        "Year"] + tags + authors + categorys + pdf_file_name + book_desc
+
+    print "title: " + title
+    print "Publisher: " + info_map["Publisher"]
+    print "ISBN: " + info_map["ISBN"]
+    print "Pages: " + info_map["Pages"]
+    print "Year: " + info_map["Year"]
+    print "tags: " + tags
+    print "authors: " + authors
+    print "categorys: " + categorys
+    print "pdf_file_name: " + pdf_file_name
+    print "desc: " + book_desc
+    print "======================="
     cur.execute(
-        "insert into books_book (title,authors,tags,isbn,pages,publisher,publish_year, tags,come_from,cover,pdf_file_name,description,categorys) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-        (title, authors, tags, info_map["ISBN"], info_map["Pages"], info_map["Publisher"], info_map["Year"], "", 0,
-         img_base64, pdf_file_name, book_desc, categorys))
+         "insert into books_book (title,authors, isbn,pages,publisher,publish_year, tags,come_from,cover,pdf_file_name,description,categorys,qiniu_key,created_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+         (title, authors, info_map["ISBN"], info_map["Pages"], info_map["Publisher"], info_map["Year"], tags, 0,
+          img_base64, pdf_file_name, book_desc, categorys, "", time.strftime( ISOTIMEFORMAT, time.localtime() )))
     conn.commit()
 
 
@@ -159,5 +175,7 @@ if __name__ == "__main__":
         try:
             if line.startswith("/"):
                 get_book_detail("https://www.geekbooks.me" + line)
-        except:
+        except Exception, e:
+            exstr = traceback.format_exc()
+            print exstr
             continue
