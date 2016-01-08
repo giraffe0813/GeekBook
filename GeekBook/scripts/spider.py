@@ -1,21 +1,24 @@
+import traceback
 import urllib2
 import re
 from bs4 import BeautifulSoup
 import MySQLdb
 import time
+import base64
+
 from GeekBook.conf import conf_host, conf_user, conf_passwd
 
-conn = MySQLdb.connect(host=conf_host, user=conf_user, passwd=conf_passwd, db="geekbookadmin",charset="utf8")
-cur = conn.cursor()
+conn = MySQLdb.connect(host=conf_host, user=conf_user, passwd=conf_passwd, db="geekbookadmin", charset="utf8")
 
+cur = conn.cursor()
 
 category_url = "https://www.geekbooks.me/category"
 pdf_list = []
+ISOTIMEFORMAT='%Y-%m-%d %X'
 
 
 # get all category url
 def get_all_category_url(url):
-
     """
     get all category url
     :param url:
@@ -73,7 +76,6 @@ def get_all_detail_url(url, category):
 
 
 def deal_with_pagination(pagination_list):
-
     """
     deal with pagination url
     eg: input [?p=7,?p=3,?p=2]
@@ -98,6 +100,7 @@ def deal_with_pagination(pagination_list):
 
     return result
 
+
 def get_book_detail(url):
     """
     get book detail,include author,title,and so on
@@ -107,12 +110,33 @@ def get_book_detail(url):
     page = urllib2.urlopen(url)
     html = page.read()
     soup = BeautifulSoup(html)
+    #
+    img_src = soup.find("table", class_="book-info").find("td", class_="cover").find("img").attrs['src']
+    img_base64 = base64.b64encode(urllib2.urlopen('https://www.geekbooks.me' + img_src).read())
+    book_desc = soup.find("p", class_="desc").contents[0]
+    pdf_file_name = soup.find("div", class_="download").find("a").attrs['href'].split('/')[-1]
+    authors = ""
+    if soup.find("p", class_="author").findAll("a") is not None:
+        for author in soup.find("p", class_="author").findAll("a"):
+            authors += author.string + ","
+
+    # tag
+    tags = ""
+    # soup.findAll("a", class_="tag")
+    if soup.findAll("a", class_="tag") is not None:
+        for tag in soup.findAll("a", class_="tag"):
+            tags += tag.string + ","
+
+
+
+    #
+    categorys = ""
+    if soup.find("ul", class_="breadcrumbs").findAll("li")[2:-1] is not None:
+        for category in soup.find("ul", class_="breadcrumbs").findAll("li")[2:-1]:
+            categorys += category.string + ","
+    #
     info_html = soup.find("td", class_="info")
     title = info_html.h1.string
-    authors_href = info_html.findAll("a")
-    authors = ""
-    for item in authors_href:
-        authors += item.string
     p = info_html.findAll("p")
     p.remove(p[0])
     p.remove(p[4])
@@ -123,10 +147,24 @@ def get_book_detail(url):
         info = item.string.split(": ")
         if len(info) >= 2:
             info_map[info[0]] = info[1]
-    print authors
-    print title + info_map["Publisher"] +info_map["ISBN"] + info_map["Pages"] + info_map["Year"]
-    cur.execute("insert into books_book (title,authors,isbn,pages,publisher,publish_year, tags,come_from) values (%s,%s,%s,%s,%s,%s,%s,%s)",(title,authors,info_map["ISBN"],info_map["Pages"],info_map["Publisher"],info_map["Year"],"",0))
+
+    print "title: " + title
+    print "Publisher: " + info_map["Publisher"]
+    print "ISBN: " + info_map["ISBN"]
+    print "Pages: " + info_map["Pages"]
+    print "Year: " + info_map["Year"]
+    print "tags: " + tags
+    print "authors: " + authors
+    print "categorys: " + categorys
+    print "pdf_file_name: " + pdf_file_name
+    print "desc: " + book_desc
+    print "======================="
+    cur.execute(
+         "insert into books_book (title,authors, isbn,pages,publisher,publish_year, tags,come_from,cover,pdf_file_name,description,categorys,qiniu_key,created_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+         (title, authors, info_map["ISBN"], info_map["Pages"], info_map["Publisher"], info_map["Year"], tags, 0,
+          img_base64, pdf_file_name, book_desc, categorys, "", time.strftime( ISOTIMEFORMAT, time.localtime() )))
     conn.commit()
+
 
 if __name__ == "__main__":
     f = open("../data/detailurl.txt", "r")
@@ -137,11 +175,7 @@ if __name__ == "__main__":
         try:
             if line.startswith("/"):
                 get_book_detail("https://www.geekbooks.me" + line)
-        except:
+        except Exception, e:
+            exstr = traceback.format_exc()
+            print exstr
             continue
-
-
-
-
-
-
