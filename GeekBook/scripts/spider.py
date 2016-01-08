@@ -119,14 +119,14 @@ def get_book_detail(url):
     if soup.find("p", class_="author").findAll("a") is not None:
         for author in soup.find("p", class_="author").findAll("a"):
             authors += author.string + ","
-        authors = authors[:len(authors)-1]
+
     # tag
     tags = ""
     # soup.findAll("a", class_="tag")
     if soup.findAll("a", class_="tag") is not None:
         for tag in soup.findAll("a", class_="tag"):
             tags += tag.string + ","
-        tags = tags[:len(tags)-1]
+
 
 
     #
