@@ -157,7 +157,7 @@ def get_book_detail(url):
     print "authors: " + authors
     print "categorys: " + categorys
     print "pdf_file_name: " + pdf_file_name
-    print "desc: " + str(book_desc)
+    # print "desc: " + str(book_desc)
     print "======================="
     cur.execute(
         "insert into books_book (title,authors, isbn,pages,publisher,publish_year, tags,come_from,cover,pdf_file_name,description,categorys,qiniu_key,created_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
