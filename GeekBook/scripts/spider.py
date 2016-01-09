@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import traceback
 import urllib2
 import re
@@ -14,7 +15,7 @@ cur = conn.cursor()
 
 category_url = "https://www.geekbooks.me/category"
 pdf_list = []
-ISOTIMEFORMAT='%Y-%m-%d %X'
+ISOTIMEFORMAT = '%Y-%m-%d %X'
 
 
 # get all category url
@@ -113,22 +114,21 @@ def get_book_detail(url):
     #
     img_src = soup.find("table", class_="book-info").find("td", class_="cover").find("img").attrs['src']
     img_base64 = base64.b64encode(urllib2.urlopen('https://www.geekbooks.me' + img_src).read())
-    book_desc = soup.find("p", class_="desc").contents[0]
+    book_desc = soup.find("p", class_="desc").text
     pdf_file_name = soup.find("div", class_="download").find("a").attrs['href'].split('/')[-1]
     authors = ""
+    author_more_str = 'more »'.decode('utf-8')
+    author_less_str = '« less'.decode('utf-8')
     if soup.find("p", class_="author").findAll("a") is not None:
         for author in soup.find("p", class_="author").findAll("a"):
-            authors += author.string + ","
-
+            if author_less_str not in author.string and author_more_str not in author.string:
+                authors += author.string + ","
     # tag
     tags = ""
     # soup.findAll("a", class_="tag")
     if soup.findAll("a", class_="tag") is not None:
         for tag in soup.findAll("a", class_="tag"):
             tags += tag.string + ","
-
-
-
     #
     categorys = ""
     if soup.find("ul", class_="breadcrumbs").findAll("li")[2:-1] is not None:
@@ -157,12 +157,12 @@ def get_book_detail(url):
     print "authors: " + authors
     print "categorys: " + categorys
     print "pdf_file_name: " + pdf_file_name
-    print "desc: " + book_desc
+    # print "desc: " + str(book_desc)
     print "======================="
     cur.execute(
-         "insert into books_book (title,authors, isbn,pages,publisher,publish_year, tags,come_from,cover,pdf_file_name,description,categorys,qiniu_key,created_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-         (title, authors, info_map["ISBN"], info_map["Pages"], info_map["Publisher"], info_map["Year"], tags, 0,
-          img_base64, pdf_file_name, book_desc, categorys, "", time.strftime( ISOTIMEFORMAT, time.localtime() )))
+        "insert into books_book (title,authors, isbn,pages,publisher,publish_year, tags,come_from,cover,pdf_file_name,description,categorys,qiniu_key,created_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        (title, authors, info_map["ISBN"], info_map["Pages"], info_map["Publisher"], info_map["Year"], tags, 0,
+         img_base64, pdf_file_name, book_desc, categorys, "", time.strftime(ISOTIMEFORMAT, time.localtime())))
     conn.commit()
 
 
