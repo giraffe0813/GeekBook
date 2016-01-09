@@ -7,10 +7,9 @@ import MySQLdb
 import time
 import base64
 
-#from GeekBook.conf import conf_host, conf_user, conf_passwd
+from GeekBook.conf import conf_host, conf_user, conf_passwd
 
-#conn = MySQLdb.connect(host=conf_host, user=conf_user, passwd=conf_passwd, db="geekbookadmin", charset="utf8")
-conn = MySQLdb.connect(host="localhost", user="root", passwd="coffee", db="geekbookadmin", charset="utf8")
+conn = MySQLdb.connect(host=conf_host, user=conf_user, passwd=conf_passwd, db="geekbookadmin", charset="utf8")
 
 cur = conn.cursor()
 
@@ -182,3 +181,6 @@ if __name__ == "__main__":
             exstr = traceback.format_exc()
             print exstr
             continue
+
+    error_f.close()
+    f.close()
