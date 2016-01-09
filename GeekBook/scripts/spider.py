@@ -7,9 +7,10 @@ import MySQLdb
 import time
 import base64
 
-from GeekBook.conf import conf_host, conf_user, conf_passwd
+#from GeekBook.conf import conf_host, conf_user, conf_passwd
 
-conn = MySQLdb.connect(host=conf_host, user=conf_user, passwd=conf_passwd, db="geekbookadmin", charset="utf8")
+#conn = MySQLdb.connect(host=conf_host, user=conf_user, passwd=conf_passwd, db="geekbookadmin", charset="utf8")
+conn = MySQLdb.connect(host="localhost", user="root", passwd="coffee", db="geekbookadmin", charset="utf8")
 
 cur = conn.cursor()
 
@@ -168,6 +169,7 @@ def get_book_detail(url):
 
 if __name__ == "__main__":
     f = open("../data/detailurl.txt", "r")
+    error_f = open("../data/errorurl.data", "a+")
     books = []
     destDir = ""
     tmp = ""
@@ -176,6 +178,7 @@ if __name__ == "__main__":
             if line.startswith("/"):
                 get_book_detail("https://www.geekbooks.me" + line)
         except Exception, e:
+            error_f.write(line)
             exstr = traceback.format_exc()
             print exstr
             continue
