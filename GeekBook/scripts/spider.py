@@ -123,10 +123,11 @@ def get_book_detail(url):
     authors = ""
     author_more_str = 'more »'.decode('utf-8')
     author_less_str = '« less'.decode('utf-8')
-    if soup.find("p", class_="author").findAll("a") is not None:
-        for author in soup.find("p", class_="author").findAll("a"):
-            if author_less_str not in author.string and author_more_str not in author.string:
-                authors += author.string + ","
+    if soup.find("p", class_="author") is not None:
+        if soup.find("p", class_="author").findAll("a") is not None:
+            for author in soup.find("p", class_="author").findAll("a"):
+                if author_less_str not in author.string and author_more_str not in author.string:
+                    authors += author.string + ","
     # tag
     tags = ""
     # soup.findAll("a", class_="tag")
@@ -143,8 +144,8 @@ def get_book_detail(url):
     title = info_html.h1.string
     p = info_html.findAll("p")
     p.remove(p[0])
-    p.remove(p[4])
-    info_map = {}
+    p.remove(p[len(p)-1])
+    info_map = {"ISBN":"", "Year" : 2016}
     for item in p:
         if item.string is None:
             continue
@@ -156,12 +157,10 @@ def get_book_detail(url):
     print "Publisher: " + info_map["Publisher"]
     print "ISBN: " + info_map["ISBN"]
     print "Pages: " + info_map["Pages"]
-    print "Year: " + info_map["Year"]
     print "tags: " + tags
     print "authors: " + authors
     print "categorys: " + categorys
     print "pdf_file_name: " + pdf_file_name
-    # print "desc: " + str(book_desc)
     book_desc = book_desc.encode(encoding='UTF-8', errors='replace')
     print "======================="
     cur.execute(
@@ -172,7 +171,7 @@ def get_book_detail(url):
 
 
 if __name__ == "__main__":
-    f = open("../data/errorurl.data", "r")
+    f = open("../data/detailurl.txt", "r")
 
     books = []
     destDir = ""
