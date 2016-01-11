@@ -6,6 +6,9 @@ from bs4 import BeautifulSoup
 import MySQLdb
 import time
 import base64
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 from GeekBook.conf import conf_host, conf_user, conf_passwd
 
@@ -16,6 +19,7 @@ cur = conn.cursor()
 category_url = "https://www.geekbooks.me/category"
 pdf_list = []
 ISOTIMEFORMAT = '%Y-%m-%d %X'
+detail_info_list = []
 
 
 # get all category url
@@ -158,17 +162,18 @@ def get_book_detail(url):
     print "categorys: " + categorys
     print "pdf_file_name: " + pdf_file_name
     # print "desc: " + str(book_desc)
+    book_desc = book_desc.encode(encoding='UTF-8', errors='replace')
     print "======================="
     cur.execute(
         "insert into books_book (title,authors, isbn,pages,publisher,publish_year, tags,come_from,cover,pdf_file_name,description,categorys,qiniu_key,created_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         (title, authors, info_map["ISBN"], info_map["Pages"], info_map["Publisher"], info_map["Year"], tags, 0,
-         img_base64, pdf_file_name, book_desc, categorys, "", time.strftime(ISOTIMEFORMAT, time.localtime())))
+         img_base64, pdf_file_name, book_desc.decode('utf-8'), categorys, "", time.strftime(ISOTIMEFORMAT, time.localtime())))
     conn.commit()
 
 
 if __name__ == "__main__":
-    f = open("../data/detailurl.txt", "r")
-    error_f = open("../data/errorurl.data", "a+")
+    f = open("../data/errorurl.data", "r")
+
     books = []
     destDir = ""
     tmp = ""
@@ -177,10 +182,10 @@ if __name__ == "__main__":
             if line.startswith("/"):
                 get_book_detail("https://www.geekbooks.me" + line)
         except Exception, e:
+            error_f = open("../data/errorurl.data", "ab")
             error_f.write(line)
+            error_f.close()
             exstr = traceback.format_exc()
             print exstr
             continue
-
-    error_f.close()
     f.close()
