@@ -6,6 +6,9 @@ from bs4 import BeautifulSoup
 import MySQLdb
 import time
 import base64
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 from GeekBook.conf import conf_host, conf_user, conf_passwd
 
@@ -16,6 +19,7 @@ cur = conn.cursor()
 category_url = "https://www.geekbooks.me/category"
 pdf_list = []
 ISOTIMEFORMAT = '%Y-%m-%d %X'
+detail_info_list = []
 
 
 # get all category url
@@ -119,10 +123,11 @@ def get_book_detail(url):
     authors = ""
     author_more_str = 'more »'.decode('utf-8')
     author_less_str = '« less'.decode('utf-8')
-    if soup.find("p", class_="author").findAll("a") is not None:
-        for author in soup.find("p", class_="author").findAll("a"):
-            if author_less_str not in author.string and author_more_str not in author.string:
-                authors += author.string + ","
+    if soup.find("p", class_="author") is not None:
+        if soup.find("p", class_="author").findAll("a") is not None:
+            for author in soup.find("p", class_="author").findAll("a"):
+                if author_less_str not in author.string and author_more_str not in author.string:
+                    authors += author.string + ","
     # tag
     tags = ""
     # soup.findAll("a", class_="tag")
@@ -139,8 +144,8 @@ def get_book_detail(url):
     title = info_html.h1.string
     p = info_html.findAll("p")
     p.remove(p[0])
-    p.remove(p[4])
-    info_map = {}
+    p.remove(p[len(p)-1])
+    info_map = {"ISBN":"", "Year" : 2016}
     for item in p:
         if item.string is None:
             continue
@@ -152,23 +157,22 @@ def get_book_detail(url):
     print "Publisher: " + info_map["Publisher"]
     print "ISBN: " + info_map["ISBN"]
     print "Pages: " + info_map["Pages"]
-    print "Year: " + info_map["Year"]
     print "tags: " + tags
     print "authors: " + authors
     print "categorys: " + categorys
     print "pdf_file_name: " + pdf_file_name
-    # print "desc: " + str(book_desc)
+    book_desc = book_desc.encode(encoding='UTF-8', errors='replace')
     print "======================="
     cur.execute(
         "insert into books_book (title,authors, isbn,pages,publisher,publish_year, tags,come_from,cover,pdf_file_name,description,categorys,qiniu_key,created_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         (title, authors, info_map["ISBN"], info_map["Pages"], info_map["Publisher"], info_map["Year"], tags, 0,
-         img_base64, pdf_file_name, book_desc, categorys, "", time.strftime(ISOTIMEFORMAT, time.localtime())))
+         img_base64, pdf_file_name, book_desc.decode('utf-8'), categorys, "", time.strftime(ISOTIMEFORMAT, time.localtime())))
     conn.commit()
 
 
 if __name__ == "__main__":
     f = open("../data/detailurl.txt", "r")
-    error_f = open("../data/errorurl.data", "a+")
+
     books = []
     destDir = ""
     tmp = ""
@@ -177,10 +181,10 @@ if __name__ == "__main__":
             if line.startswith("/"):
                 get_book_detail("https://www.geekbooks.me" + line)
         except Exception, e:
+            error_f = open("../data/errorurl.data", "ab")
             error_f.write(line)
+            error_f.close()
             exstr = traceback.format_exc()
             print exstr
             continue
-
-    error_f.close()
     f.close()
