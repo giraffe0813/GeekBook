@@ -1,6 +1,7 @@
 # GeekBook
 a python script for download books from GeekBook as well as getting books' detail info and storing into database.(项目主要是一个用来从geekbook网站上下载所有书的脚本，并且获取所有书的详细信息存入数据库)
 
+
 ### Project structure(大致的项目结构)
 ```
  |-GeekBook
